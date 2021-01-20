@@ -1,4 +1,6 @@
 const TaskModel = require('../model/TaskModel');
+const {startOfDay,startOfWeek, startOfMonth, startOfYear, endOfDay, endOfWeek, endOfMonth, endOfYear} = require('date-fns');
+const current = new Date();
 
 class TaskController{
     async create(req, res){
@@ -23,7 +25,7 @@ class TaskController{
     }
 
     async all(req, res){
-        await TaskModel.find({ macaddress: {'$in': req.body.macaddress}})
+        await TaskModel.find({ macaddress: {'$in': req.params.macaddress}})
                     .sort('when')
                     .then(response => {
                         return res.status(200).json(response);
@@ -45,6 +47,99 @@ class TaskController{
                     .catch(error => {
                         return res.status(500).json(error);
                     })
+    }
+
+    async delete(req, res){
+        await TaskModel.deleteOne({'_id': req.params.id})
+                    .then(response => {
+                        return res.status(200).json(response);
+                    })
+                    .catch(error => {
+                        return res.status(500).json(error);
+                    });
+    }
+
+    async done(req, res){
+        await TaskModel.findByIdAndUpdate(
+                                        {'_id': req.params.id},
+                                        {'done': req.params.done},
+                                        {new: true})
+                    .then(response => {
+                        return res.status(200).json(response);
+                    })
+                    .catch(error => {
+                        return res.status(500).json(error);
+                    });
+    }
+
+    async late(req, res){
+        await TaskModel.find({
+                            'when': {'$lt': current},
+                            'macaddress': {'$in': req.params.macaddress}
+                        })
+                    .sort('when')
+                    .then(response => {
+                        return res.status(200).json(response);
+                    })
+                    .catch(error => {
+                        return res.status(500).json(error);
+                    });
+    }
+
+    async today(req, res){
+        await TaskModel.find({
+                            'macaddress': {'$in': req.params.macaddress},
+                            'when': {'$gte':startOfDay(current), '$lte': endOfDay(current)}
+                        })
+                    .sort('when')
+                    .then(response => {
+                        return res.status(200).json(response);
+                    })
+                    .catch(error => {
+                        return res.status(500).json(error);
+                    });
+    }
+
+    async week(req, res){
+        await TaskModel.find({
+                            'macaddress': {'$in': req.params.macaddress},
+                            'when': {'$gte':startOfWeek(current), '$lte': endOfWeek(current)}
+                        })
+                    .sort('when')
+                    .then(response => {
+                        return res.status(200).json(response);
+                    })
+                    .catch(error => {
+                        return res.status(500).json(error);
+                    });
+    }
+
+    async month(req, res){
+        await TaskModel.find({
+                            'macaddress': {'$in': req.params.macaddress},
+                            'when': {'$gte':startOfMonth(current), '$lte': endOfMonth(current)}
+                        })
+                    .sort('when')
+                    .then(response => {
+                        return res.status(200).json(response);
+                    })
+                    .catch(error => {
+                        return res.status(500).json(error);
+                    });
+    }
+
+    async year(req, res){
+        await TaskModel.find({
+                            'macaddress': {'$in': req.params.macaddress},
+                            'when': {'$gte':startOfYear(current), '$lte': endOfYear(current)}
+                        })
+                    .sort('when')
+                    .then(response => {
+                        return res.status(200).json(response);
+                    })
+                    .catch(error => {
+                        return res.status(500).json(error);
+                    });
     }
 }
 
