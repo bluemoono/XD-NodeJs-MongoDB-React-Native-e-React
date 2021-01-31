@@ -39,4 +39,9 @@ export const Content = styled.div`
     justify-content: center;
     margin-top: 50px;
     margin-bottom: 100px;
+
+    a{
+        text-decoration: none;
+        color: #000;
+    }
 `

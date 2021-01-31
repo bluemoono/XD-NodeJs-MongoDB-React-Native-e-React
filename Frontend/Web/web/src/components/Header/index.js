@@ -1,29 +1,59 @@
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import * as S from './style';
+import {Link} from 'react-router-dom';
 
 import logo from '../../assets/logo-p.png';
 import bell from '../../assets/bell-p.png';
 
-function Header() {
+import api from '../../services/api';
+import isConnected from '../../utils/IsConnected';
+
+function Header({clickNotification}) {
+    const [lateCount, setLateCount] = useState();
+
+    async function lateVerify(){
+        await api.get(`/task/filter/late/${isConnected}`)
+        .then(response =>{
+            setLateCount(response.data.length);
+        });
+    }
+
+    useEffect(()=>{
+        lateVerify();
+    });
+
+    async function Logout(){
+        localStorage.removeItem('@todo/macddress');
+        window.location.reload();
+    }
+
     return (
+
         <S.Container>
             <S.LeftSide>
                 <img src={logo} alt="Logo" />
             </S.LeftSide>
             <S.RightSide>
-                <a href="#">INICÍO</a>
+                <Link to="/">INICÍO</Link>
                 <span className="divisor"/>
 
-                <a href="#">NOVA TAREFA</a>
+                <Link to="/task">NOVA TAREFA</Link>
                 <span className="divisor"/>
 
-                <a href="#">SINCRONIZAR O CELULAR</a>
-                <span className="divisor"/>
-                
-                <a href="#" id="notification">
-                    <img src={bell} alt="Notificação" />
-                    <span>5</span>
-                </a>
+                {!isConnected ? 
+                <Link to="/qrcode">SINCRONIZAR O CELULAR</Link> :
+                <button className="sair" type="button" onClick={Logout}>SAIR</button>}
+
+                {
+                lateCount &&
+                <>
+                    <span className="divisor"/>
+                    <button onClick={clickNotification} id="notification">
+                        <img src={bell} alt="Notificação" />
+                        <span>{lateCount}</span>
+                    </button>
+                </>
+                }
             </S.RightSide>
         </S.Container>
     )
